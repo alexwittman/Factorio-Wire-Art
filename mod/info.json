@@ -1,0 +1,8 @@
+{
+    "name": "wire_art",
+    "version": "1.0.0",
+    "title": "Wire Art",
+    "author": "Alex Wittman",
+    "factorio_version": "2.0",
+    "description": "Adds invisible power poles for displaying wire art."
+}

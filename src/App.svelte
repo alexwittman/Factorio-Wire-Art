@@ -1,89 +1,63 @@
-<script>
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from './assets/vite.svg'
-  import heroImg from './assets/hero.png'
-  import Counter from './lib/Counter.svelte'
+<script lang="ts">
+  import Stage1Source from "./routes/Stage1_Source.svelte";
+  import Stage2Pins from "./routes/Stage2_Pins.svelte";
+  import Stage3Trace from "./routes/Stage3_Trace.svelte";
+  import Stage4Export from "./routes/Stage4_Export.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import { Toaster } from "svelte-sonner";
 </script>
 
-<section id="center">
-  <div class="hero">
-    <img src={heroImg} class="base" width="170" height="179" alt="" />
-    <img src={svelteLogo} class="framework" alt="Svelte logo" />
-    <img src={viteLogo} class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/App.svelte</code> and save to test <code>HMR</code></p>
-  </div>
-  <Counter />
-</section>
+<main
+  class="h-screen w-screen flex flex-col bg-zinc-950 text-zinc-50 overflow-hidden font-sans"
+>
+  <header
+    class="h-14 border-b border-zinc-800 flex items-center px-6 bg-zinc-900/50"
+  >
+    <h1 class="text-sm font-bold uppercase tracking-widest text-emerald-500">
+      Factorio Wire Art Generator
+    </h1>
+  </header>
 
-<div class="ticks"></div>
+  <div class="flex-1 grid grid-cols-4 gap-4 p-4 min-h-0">
+    {#each [{ title: "1. Select Image", comp: Stage1Source }, { title: "2. Generate Pins", comp: Stage2Pins }, { title: "3. Run Optimization", comp: Stage3Trace }, { title: "4. Export", comp: Stage4Export }] as col}
+      <section class="flex flex-col gap-2 min-h-0">
+        <h2
+          class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1"
+        >
+          {col.title}
+        </h2>
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true">
-      <use href="/icons.svg#documentation-icon"></use>
-    </svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank" rel="noreferrer">
-          <img class="logo" src={viteLogo} alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://svelte.dev/" target="_blank" rel="noreferrer">
-          <img class="button-icon" src={svelteLogo} alt="" />
-          Learn more
-        </a>
-      </li>
-    </ul>
+        <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+          <Card.Root class="bg-zinc-900 border-zinc-800 p-4">
+            <svelte:component this={col.comp} />
+          </Card.Root>
+        </div>
+      </section>
+    {/each}
   </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true">
-      <use href="/icons.svg#social-icon"></use>
-    </svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li>
-        <a href="https://github.com/vitejs/vite" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#github-icon"></use>
-          </svg>
-          GitHub
-        </a>
-      </li>
-      <li>
-        <a href="https://chat.vite.dev/" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#discord-icon"></use>
-          </svg>
-          Discord
-        </a>
-      </li>
-      <li>
-        <a href="https://x.com/vite_js" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#x-icon"></use>
-          </svg>
-          X.com
-        </a>
-      </li>
-      <li>
-        <a href="https://bsky.app/profile/vite.dev" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#bluesky-icon"></use>
-          </svg>
-          Bluesky
-        </a>
-      </li>
-    </ul>
-  </div>
-</section>
+  <Toaster
+    position="bottom-center"
+    richColors
+    theme="dark"
+    toastOptions={{
+      style: "background: #18181b; border: 1px solid #27272a; color: #f4f4f5;",
+      class: "my-toast-class",
+    }}
+  />
+</main>
 
-<div class="ticks"></div>
-<section id="spacer"></section>
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+  }
+</style>
