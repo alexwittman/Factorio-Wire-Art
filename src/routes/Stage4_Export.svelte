@@ -8,7 +8,7 @@
   }
 
   let modAcknowledged = $state(false);
-  let exportScale = $state(32);
+  let exportScale = $state(16);
   let blueprintError = $derived(
     pipeline.threadStats &&
       (pipeline.threadStats!.longestThreadLength / pipeline.imageSize) *
@@ -59,6 +59,9 @@
           <span class="text-[9px] text-amber-500/70 font-mono">
             I acknowledge I have installed the wire art mod in Factorio.
           </span>
+          <span class="text-[9px] text-amber-500/70 font-mono">
+            If you have not, it will not look the same.
+          </span>
         </div>
       </div>
 
@@ -72,7 +75,9 @@
       </a>
     </label>
 
-    <div class="space-y-2 pt-1">
+    <div
+      class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+    >
       <div class="flex items-center justify-between text-[9px]">
         <span class="text-zinc-500 uppercase tracking-wider font-bold">
           Scale Configuration
@@ -88,19 +93,22 @@
         type={"single"}
         value={exportScale}
         min={8}
-        max={128}
+        max={64}
         step={1}
         onValueChange={(v) => (exportScale = v)}
-        class="py-1 {!modAcknowledged
+        class="py-1 {!modAcknowledged || pipeline.isProcessingThreads
           ? 'cursor-not-allowed opacity-50'
           : 'cursor-pointer'}"
-        disabled={!modAcknowledged}
+        disabled={!modAcknowledged || pipeline.isProcessingThreads}
       />
     </div>
 
     <button
       type="button"
-      disabled={!pipeline.threadResults || !modAcknowledged || blueprintError}
+      disabled={!pipeline.threadResults ||
+        !modAcknowledged ||
+        blueprintError ||
+        pipeline.isProcessingThreads}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
       <span
@@ -114,7 +122,7 @@
       {#if blueprintError}
         <span class="text-[10px] text-red-500"
           >Longest wire exceeds Factorio maximum length of 64 tiles, so
-          blueprint will not work.</span
+          blueprint will not look the same.</span
         >
         <span class="text-[10px] text-red-500"
           >Reduce the scale or use the cosole command option instead.</span
@@ -125,7 +133,9 @@
     <button
       type="button"
       onclick={() => exportThreads("console-command", exportScale)}
-      disabled={!pipeline.threadResults || !modAcknowledged}
+      disabled={!pipeline.threadResults ||
+        !modAcknowledged ||
+        pipeline.isProcessingThreads}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
       <span
@@ -149,7 +159,7 @@
     <button
       type="button"
       onclick={() => exportThreads("csv")}
-      disabled={!pipeline.threadResults}
+      disabled={!pipeline.threadResults || pipeline.isProcessingThreads}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
       <span
