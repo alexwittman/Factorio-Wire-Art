@@ -11,10 +11,18 @@ import type { ThreadResult } from "$lib/lib/threading/ThreadResult";
 import type { ThreadStats } from "$lib/lib/threading/ThreadStats";
 import { ThreadResultProcessor } from "$lib/lib/threading/ThreadResultProcessor";
 import type { ExportType } from "$lib/lib/export_processors/ExportType";
-import { SvgExportProcessor } from "$lib/lib/export_processors/SvgExportProcessor";
 import { CsvExportProcessor } from "$lib/lib/export_processors/CsvExportProcessor";
 import { ConsoleCommandExportProcessor } from "$lib/lib/export_processors/ConsoleCommandExportProcessor";
-import type { ThreadColorTheme } from "$lib/lib/threading/ThreadColorTheme";
+import type {
+  ThreadColor,
+  ThreadColorTheme,
+} from "$lib/lib/threading/ThreadColorTheme";
+import { IImageProcessor } from "$lib/lib/image_processors/IImageProcessor";
+import type { LiveFrame } from "$lib/lib/frame_processors/LiveFrame";
+import { ILiveFrameProcessor } from "$lib/lib/frame_processors/ILiveFrameProcessor";
+import { RGBCompositeFrameProcessor } from "$lib/lib/frame_processors/RGBCompositeFrameProcessor";
+import { RecolorLiveFrameProcessor } from "$lib/lib/frame_processors/RecolorLiveFrameProcessor";
+import { RGBImageProcessor } from "$lib/lib/image_processors/RGBImageProcessor";
 
 class UnifiedOrchestratorState {
   imageUrl = $state("");
@@ -27,14 +35,15 @@ class UnifiedOrchestratorState {
   pinCount = $state(250);
   voronoiIterations = $state(30);
   voronoiPinRadius = $state(3);
+  pinGenerationProgress = $state(0);
   // TODO: Click to enable/disable pin. Add enabled list to pin layout and toggle
 
   isProcessingThreads = $state(false);
   threadingProgress = $state(0);
-  liveFrame: ImageData | null = $state(null);
-  threadResult: ThreadResult | null = $state(null);
+  liveFrames: LiveFrame[] = $state([]);
+  threadResults: ThreadResult[] | null = $state(null);
   threadStats: ThreadStats | null = $state(null);
-  threadColorTheme: ThreadColorTheme = $state("bw");
+  threadColorTheme: ThreadColorTheme = $state("w");
 
   config = $state({
     numLines: 3000,
@@ -44,13 +53,11 @@ class UnifiedOrchestratorState {
     minScoreThreshold: 0.1,
   });
 
-  private worker: Worker | null = null;
-
   async setImageUrl(url: string) {
     this.imageUrl = url;
-    this.threadResult = null;
+    this.threadResults = null;
     this.threadStats = null;
-    this.liveFrame = null;
+    this.liveFrames = [];
   }
 
   async getPinGenerator() {
@@ -84,15 +91,19 @@ class UnifiedOrchestratorState {
     const requestId = ++this.latestRequestId;
 
     this.pinLayout = null;
-    this.liveFrame = null;
-    this.threadResult = null;
+    this.liveFrames = [];
+    this.threadResults = null;
     this.threadStats = null;
+    this.pinGenerationProgress = 0;
 
     let pinGenerator = await this.getPinGenerator();
+    let totalIterations =
+      this.pinGeneratorType === "voronoi" ? this.voronoiIterations : 1;
     this.isProcessingPins = true;
 
     try {
       const generator = pinGenerator.generate(this.pinCount);
+      let iteration = 1;
 
       for await (const pinLayout of generator) {
         if (requestId !== this.latestRequestId) {
@@ -100,6 +111,7 @@ class UnifiedOrchestratorState {
         }
 
         this.pinLayout = pinLayout;
+        this.pinGenerationProgress = (iteration++ / totalIterations) * 100;
         await new Promise((resolve) => requestAnimationFrame(resolve));
       }
 
@@ -111,75 +123,158 @@ class UnifiedOrchestratorState {
     }
   }
 
+  getWorkerConfigs(): {
+    imageProcessor: IImageProcessor;
+    color: ThreadColor;
+    frameProcessor: ILiveFrameProcessor;
+  }[] {
+    switch (this.threadColorTheme) {
+      case "rgb":
+        return [
+          {
+            imageProcessor: new PipelineImageProcessor([
+              new RGBImageProcessor("red"),
+            ]),
+            color: "red",
+            frameProcessor: new RecolorLiveFrameProcessor("red"),
+          },
+          {
+            imageProcessor: new PipelineImageProcessor([
+              new RGBImageProcessor("green"),
+            ]),
+            color: "green",
+            frameProcessor: new RecolorLiveFrameProcessor("green"),
+          },
+          {
+            imageProcessor: new PipelineImageProcessor([
+              new RGBImageProcessor("blue"),
+            ]),
+            color: "blue",
+            frameProcessor: new RecolorLiveFrameProcessor("blue"),
+          },
+          {
+            imageProcessor: new PipelineImageProcessor([
+              new GreyscaleImageProcessor(),
+              new InversionImageProcessor(),
+            ]),
+            color: "white",
+            frameProcessor: new RGBCompositeFrameProcessor(),
+          },
+        ];
+      case "w":
+        return [
+          {
+            imageProcessor: new PipelineImageProcessor([
+              new GreyscaleImageProcessor(),
+            ]),
+            color: "white",
+            frameProcessor: new RecolorLiveFrameProcessor("white"),
+          },
+        ];
+    }
+  }
+
   runTraceOptimization() {
     if (!this.imageUrl || !this.pinLayout) return;
 
-    this.threadResult = null;
+    this.threadResults = [];
     this.threadStats = null;
     this.isProcessingThreads = true;
     this.threadingProgress = 0;
-    this.liveFrame = null;
+    let workerConfigs = this.getWorkerConfigs();
+    let workerStatuses = Object.fromEntries(
+      workerConfigs.map((config) => [
+        config.color,
+        { running: true, progress: 0 },
+      ]),
+    );
+    this.liveFrames = workerConfigs.map((c) => {
+      return {
+        color: c.color,
+        data: new ImageData(this.imageSize, this.imageSize),
+      };
+    });
 
     new DefaultImageLoader()
       .load(this.imageUrl, this.imageSize)
-      .then((image) => {
-        let imageProcessor = new PipelineImageProcessor([
-          new GreyscaleImageProcessor(),
-          new InversionImageProcessor(),
-        ]);
-        image = imageProcessor.process(image);
+      .then((originalImage) => {
+        workerConfigs.forEach((config) => {
+          let image: Float32Array = originalImage.slice();
+          image = config.imageProcessor.process(image);
 
-        this.worker = new Worker(
-          new URL("../workers/traceEngine.worker.ts", import.meta.url),
-          { type: "module" },
-        );
+          let worker = new Worker(
+            new URL("../workers/traceEngine.worker.ts", import.meta.url),
+            { type: "module" },
+          );
 
-        this.worker.postMessage({
-          matrix: image,
-          width: this.imageSize,
-          pins: $state.snapshot(this.pinLayout!.pins),
-          adjacencies: $state.snapshot(this.pinLayout!.adjacencies),
-          config: $state.snapshot(this.config),
-        });
+          worker.postMessage({
+            matrix: image,
+            width: this.imageSize,
+            pins: $state.snapshot(this.pinLayout!.pins),
+            adjacencies: $state.snapshot(this.pinLayout!.adjacencies),
+            config: $state.snapshot(this.config),
+          });
 
-        this.worker.onmessage = (e) => {
-          const { type, progress, frame, result, executionTimeMs } = e.data;
+          worker.onmessage = (e) => {
+            const { type, progress, frame, result, executionTimeMs } = e.data;
 
-          if (frame) this.liveFrame = frame;
-
-          if (type === "progress") {
-            this.threadingProgress = progress;
-          } else if (type === "complete") {
-            this.threadResult = result as ThreadResult;
-            this.threadStats = new ThreadResultProcessor().getStats(
-              this.threadResult,
-              this.pinLayout!,
-              executionTimeMs,
+            const existingIndex = this.liveFrames.findIndex(
+              (f) => f.color === config.color,
             );
-            this.isProcessingThreads = false;
-            this.threadingProgress = 100;
-            this.worker?.terminate();
-          }
-        };
+            if (existingIndex !== -1) {
+              this.liveFrames[existingIndex].data = frame;
+            } else {
+              this.liveFrames.push({
+                color: config.color,
+                data: frame,
+              });
+            }
+            config.frameProcessor.process(this.liveFrames);
+
+            if (type === "progress") {
+              workerStatuses[config.color].progress = progress;
+              const statuses = Object.values(workerStatuses);
+              const totalProgressSum = statuses.reduce(
+                (sum, status) => sum + status.progress,
+                0,
+              );
+              this.threadingProgress = totalProgressSum / statuses.length;
+            } else if (type === "complete") {
+              let threadResult = result as ThreadResult;
+              threadResult.color = config.color;
+              if (this.threadColorTheme !== "rgb" || config.color !== "white") {
+                this.threadResults?.push(threadResult);
+              }
+
+              workerStatuses[config.color].running = false;
+              workerStatuses[config.color].progress = 100;
+              if (
+                Object.values(workerStatuses).every((status) => !status.running)
+              ) {
+                this.isProcessingThreads = false;
+                this.threadingProgress = 100;
+                this.threadStats = new ThreadResultProcessor().getStats(
+                  this.threadResults!,
+                  this.pinLayout!,
+                  executionTimeMs,
+                );
+              }
+            }
+          };
+        });
       });
   }
 
   export(type: ExportType, scale: number) {
     switch (type) {
-      case "svg":
-        return new SvgExportProcessor(
-          this.imageSize,
-          this.config.lineWidth,
-          this.config.lineWeight,
-        ).export(this.threadResult!, this.pinLayout!);
       case "csv":
-        return new CsvExportProcessor().export(
-          this.threadResult!,
+        return new CsvExportProcessor(this.imageSize).export(
+          this.threadResults!,
           this.pinLayout!,
         );
       case "console-command":
         return new ConsoleCommandExportProcessor(scale, this.imageSize).export(
-          this.threadResult!,
+          this.threadResults!,
           this.pinLayout!,
         );
       default:

@@ -4,15 +4,17 @@ import type { ThreadStats } from "./ThreadStats";
 
 export class ThreadResultProcessor {
   getStats(
-    result: ThreadResult,
+    results: ThreadResult[],
     layout: IPinLayout,
     executionTimeMs: number,
   ): ThreadStats {
-    const totalThreads = result.sequence.length;
+    const totalThreads = results.reduce((sum, r) => sum + r.sequence.length, 0);
+
     const [pinAvgThreadCount, pinMaxThreadCount, pinMinThreadCount] =
-      this.getPinStats(result, layout);
+      this.getPinStats(results, layout);
+
     const [longestThreadLength, shortestThreadLength, totalThreadLength] =
-      this.getThreadStats(result, layout);
+      this.getThreadStats(results, layout);
 
     return {
       totalThreads,
@@ -27,14 +29,16 @@ export class ThreadResultProcessor {
   }
 
   getPinStats(
-    result: ThreadResult,
+    results: ThreadResult[],
     layout: IPinLayout,
   ): [number, number, number] {
     const pinCounts = new Array(layout.pins.length).fill(0);
 
-    for (const [pinA, pinB] of result.sequence) {
-      pinCounts[pinA]++;
-      pinCounts[pinB]++;
+    for (const result of results) {
+      for (const [pinA, pinB] of result.sequence) {
+        pinCounts[pinA]++;
+        pinCounts[pinB]++;
+      }
     }
 
     const min = Math.min(...pinCounts);
@@ -46,29 +50,25 @@ export class ThreadResultProcessor {
   }
 
   getThreadStats(
-    result: ThreadResult,
+    results: ThreadResult[],
     layout: IPinLayout,
   ): [number, number, number] {
     let shortestThreadLength = Number.MAX_VALUE;
     let longestThreadLength = 0;
     let totalThreadLength = 0;
-    for (let i = 0; i < result.sequence.length; i++) {
-      let pair = result.sequence[i];
-      let pin0 = layout.pins[pair[0]];
-      let pin1 = layout.pins[pair[1]];
 
-      let length = Math.sqrt(
-        Math.pow(pin1.x - pin0.x, 2) + Math.pow(pin1.y - pin0.y, 2),
-      );
+    for (const result of results) {
+      for (const [idxA, idxB] of result.sequence) {
+        const pin0 = layout.pins[idxA];
+        const pin1 = layout.pins[idxB];
 
-      totalThreadLength += length;
+        const length = Math.sqrt(
+          Math.pow(pin1.x - pin0.x, 2) + Math.pow(pin1.y - pin0.y, 2),
+        );
 
-      if (length < shortestThreadLength) {
-        shortestThreadLength = length;
-      }
-
-      if (length > longestThreadLength) {
-        longestThreadLength = length;
+        totalThreadLength += length;
+        if (length < shortestThreadLength) shortestThreadLength = length;
+        if (length > longestThreadLength) longestThreadLength = length;
       }
     }
 

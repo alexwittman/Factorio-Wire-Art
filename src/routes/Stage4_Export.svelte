@@ -100,7 +100,7 @@
 
     <button
       type="button"
-      disabled={!pipeline.threadResult || !modAcknowledged || blueprintError}
+      disabled={!pipeline.threadResults || !modAcknowledged || blueprintError}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
       <span
@@ -125,7 +125,7 @@
     <button
       type="button"
       onclick={() => exportThreads("console-command", exportScale)}
-      disabled={!pipeline.threadResult || !modAcknowledged}
+      disabled={!pipeline.threadResults || !modAcknowledged}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
       <span
@@ -148,22 +148,8 @@
 
     <button
       type="button"
-      onclick={() => exportThreads("svg")}
-      disabled={!pipeline.threadResult}
-      class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
-    >
-      <span
-        class="text-[11px] font-bold font-mono tracking-wider text-zinc-200 uppercase"
-      >
-        SVG Image
-      </span>
-      <span class="text-[10px] text-zinc-500">Scalable image of wires.</span>
-    </button>
-
-    <button
-      type="button"
       onclick={() => exportThreads("csv")}
-      disabled={!pipeline.threadResult}
+      disabled={!pipeline.threadResults}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
       <span

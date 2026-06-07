@@ -14,6 +14,10 @@
 
     pipeline.setImageUrl(imageUrl);
   }
+
+  // TODO: Add basic photo manipulation here
+  // - Letterbox vs Crop
+  // - Brightness Slider
 </script>
 
 <div class="flex flex-col gap-4 w-full max-w-md">
@@ -43,6 +47,7 @@
       type="file"
       accept="image/*"
       class="hidden"
+      disabled={pipeline.isProcessingPins || pipeline.isProcessingThreads}
       onchange={handleImageSelection}
     />
   </label>

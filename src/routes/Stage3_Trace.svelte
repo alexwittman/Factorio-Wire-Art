@@ -5,7 +5,7 @@
   import * as Accordion from "$lib/components/ui/accordion";
   import type { ThreadColorTheme } from "$lib/lib/threading/ThreadColorTheme";
 
-  let canvasElement: HTMLCanvasElement | null = $state(null);
+  let canvasElements: (HTMLCanvasElement | null)[] = $state([]);
 
   let isDisabled = $derived(
     !pipeline.imageUrl ||
@@ -19,14 +19,17 @@
   }
 
   $effect(() => {
-    if (canvasElement && pipeline.liveFrame) {
-      const ctx = canvasElement.getContext("2d", { alpha: false })!;
-      if (canvasElement.width !== pipeline.liveFrame.width) {
-        canvasElement.width = pipeline.liveFrame.width;
-        canvasElement.height = pipeline.liveFrame.height;
+    pipeline.liveFrames.forEach((frame, i) => {
+      const canvas = canvasElements[i];
+      if (canvas && frame.data) {
+        const ctx = canvas.getContext("2d", { alpha: false })!;
+        if (canvas.width !== frame.data.width) {
+          canvas.width = frame.data.width;
+          canvas.height = frame.data.height;
+        }
+        ctx.putImageData(frame.data, 0, 0);
       }
-      ctx.putImageData(pipeline.liveFrame, 0, 0);
-    }
+    });
   });
 
   function handleLinesChange(val: number) {
@@ -44,29 +47,32 @@
   class="w-full flex flex-col gap-6 items-center justify-center max-w-md mx-auto"
 >
   <div
-    class="w-full aspect-square rounded-xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl shrink-0"
+    class="w-full aspect-square rounded-xl border border-zinc-800 bg-zinc-950 relative overflow-hidden shadow-2xl shrink-0 flex flex-wrap gap-2 p-2"
   >
-    {#if !pipeline.isProcessingThreads && !pipeline.liveFrame}
+    {#if !pipeline.isProcessingThreads && pipeline.liveFrames.length === 0}
       <div
-        class="text-center space-y-1.5 text-zinc-600 font-mono text-[11px] uppercase tracking-wider"
+        class="w-full h-full flex flex-col items-center justify-center text-center space-y-1.5 text-zinc-600 font-mono text-[11px] uppercase tracking-wider"
       >
         {#if !pipeline.imageUrl}
           <span>Missing Image</span>
-        {:else if !pipeline.pinLayout}
-          <span>Missing Pin Layout</span>
-        {:else if pipeline.isProcessingPins}
+        {:else if pipeline.isProcessingPins || !pipeline.pinLayout}
           <span>Waiting for pins...</span>
         {:else}
           <span>Ready to generate...</span>
         {/if}
       </div>
+    {:else}
+      {#each pipeline.liveFrames as _, i}
+        <div
+          class="flex-1 min-w-[45%] aspect-square rounded-lg border border-zinc-800 bg-white relative overflow-hidden shadow-lg"
+        >
+          <canvas
+            bind:this={canvasElements[i]}
+            class="w-full h-full object-contain"
+          ></canvas>
+        </div>
+      {/each}
     {/if}
-    <canvas
-      bind:this={canvasElement}
-      class="w-full h-full object-contain bg-white transition-opacity duration-300 {!pipeline.liveFrame
-        ? 'opacity-0 absolute'
-        : 'opacity-100'}"
-    ></canvas>
   </div>
 
   <div
@@ -83,7 +89,7 @@
       <div
         class="grid grid-cols-2 gap-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-800/80"
       >
-        {#each [{ id: "bw", name: "Black & White" }, { id: "cmy", name: "Cyan-Magenta-Yellow" }] as type}
+        {#each [{ id: "w", name: "Monochrome" }, { id: "rgb", name: "Color" }] as type}
           <button
             type="button"
             onclick={() => updateThreadColorTheme(type.id as ThreadColorTheme)}
@@ -115,7 +121,7 @@
         type={"single"}
         value={pipeline.config.numLines || 2000}
         min={500}
-        max={10000}
+        max={25 * pipeline.pinCount}
         step={50}
         disabled={isDisabled}
         onValueChange={handleLinesChange}
@@ -194,7 +200,7 @@
             )} / {pipeline.config.numLines}
           </span>
         {:else}
-          {pipeline.threadResult ? "Regenerate" : "Generate"}
+          {pipeline.threadResults ? "Regenerate" : "Generate"}
         {/if}
       </button>
     </div>

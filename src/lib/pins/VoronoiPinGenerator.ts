@@ -35,7 +35,7 @@ export class VoronoiPinGenerator implements IPinGenerator {
     while (found < count && attempts < maxAttempts) {
       let x = Math.floor(Math.random() * this.width);
       let y = Math.floor(Math.random() * this.height);
-      let brightness = this.image[y * this.width + x];
+      let brightness = this.getBrightness(x, y);
       if (brightness < 0.9 && Math.random() > brightness) {
         points[found * 2] = x;
         points[found * 2 + 1] = y;
@@ -53,7 +53,7 @@ export class VoronoiPinGenerator implements IPinGenerator {
       let delaunayIndex = 0;
       for (let y = 0; y < this.height; y++) {
         for (let x = 0; x < this.width; x++) {
-          const brightness = this.image[y * this.width + x];
+          const brightness = this.getBrightness(x, y);
           const weight = 1.0 - brightness;
           delaunayIndex = delaunay.find(x, y, delaunayIndex);
           weights[delaunayIndex] += weight;
@@ -72,6 +72,10 @@ export class VoronoiPinGenerator implements IPinGenerator {
     }
 
     return this.createLayout(points);
+  }
+
+  private getBrightness(x: number, y: number): number {
+    return 1 - this.image[y * this.width + x];
   }
 
   private createLayout(points: Float64Array): IPinLayout {

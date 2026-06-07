@@ -24,12 +24,17 @@ self.onmessage = function (e) {
   let oldPin = 0;
   const lines: Array<[number, number]> = [];
   const previousPins: number[] = [];
+  const connectedEdges = new Set<number>();
   const startTime = performance.now();
 
   const liveCanvas = new OffscreenCanvas(width, width);
   const liveCtx = liveCanvas.getContext("2d")!;
 
   let lineCache = new Map<string, { x: Int32Array; y: Int32Array }>();
+
+  const getEdgeKey = (a: number, b: number) => {
+    return a < b ? (a << 16) | b : (b << 16) | a;
+  };
 
   function getLinePixels(
     p0: IPoint2D,
@@ -98,7 +103,11 @@ self.onmessage = function (e) {
     for (let i = 0; i < neighbors.length; i++) {
       const pin = neighbors[i];
 
-      if (previousPins.includes(pin)) continue;
+      if (
+        previousPins.includes(pin) ||
+        connectedEdges.has(getEdgeKey(oldPin, pin))
+      )
+        continue;
 
       const coord = pins[pin];
       const lineData = getLinePixels(oldCoord, coord, lineWidth);
@@ -126,9 +135,9 @@ self.onmessage = function (e) {
       break;
     }
 
-    if (previousPins.length >= minLoop) {
-      previousPins.shift();
-    }
+    connectedEdges.add(getEdgeKey(oldPin, bestPin));
+
+    if (previousPins.length >= minLoop) previousPins.shift();
     previousPins.push(bestPin);
 
     const linePixels = getLinePixels(oldCoord, pins[bestPin], lineWidth);

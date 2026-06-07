@@ -1,24 +1,39 @@
 import { IPinLayout } from "../pins/IPinLayout";
 import type { ThreadResult } from "../threading/ThreadResult";
 import { IExportProcessor } from "./IExportProcessor";
+import JSZip from "jszip";
 
 export class CsvExportProcessor implements IExportProcessor {
-  export(result: ThreadResult, layout: IPinLayout): void {
-    let pinPairsCsv = "index,start_pin_index,end_pin_index\n";
-    result.sequence.forEach(([start, end], index) => {
-      pinPairsCsv += `${index},${start},${end}\n`;
-    });
-    this.triggerBlobDownload(pinPairsCsv, "pin_pairs.csv", "text/csv");
+  imageSize: number;
+
+  constructor(imageSize: number) {
+    this.imageSize = imageSize;
+  }
+
+  async export(results: ThreadResult[], layout: IPinLayout): Promise<void> {
+    const zip = new JSZip();
 
     let pinCoordsCsv = "index,x,y\n";
     layout.pins.forEach((point, index) => {
-      pinCoordsCsv += `${index},${point.x},${point.y}\n`;
+      pinCoordsCsv += `${index},${point.x / this.imageSize},${point.y / this.imageSize}\n`;
     });
-    this.triggerBlobDownload(pinCoordsCsv, "pin_coords.csv", "text/csv");
+    zip.file("pin_coords.csv", pinCoordsCsv);
+
+    results.forEach((result) => {
+      let pinPairsCsv = "index,start_pin_index,end_pin_index\n";
+      result.sequence.forEach(([start, end], index) => {
+        pinPairsCsv += `${index},${start},${end}\n`;
+      });
+
+      const fileName = `pin_pairs_${result.color}.csv`;
+      zip.file(fileName, pinPairsCsv);
+    });
+
+    const content = await zip.generateAsync({ type: "blob" });
+    this.triggerBlobDownload(content, "threaded_data.zip");
   }
 
-  triggerBlobDownload(content: string, filename: string, mimeType: string) {
-    const blob = new Blob([content], { type: mimeType });
+  triggerBlobDownload(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;

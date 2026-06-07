@@ -9,7 +9,6 @@
     const count = pipeline.pinCount;
     const type = pipeline.pinGeneratorType;
     const voronoiIterations = pipeline.voronoiIterations;
-    const voronoiPinRadius = pipeline.voronoiPinRadius;
     pipeline.generatePinGeometry();
   });
 
@@ -41,6 +40,14 @@
           class="mt-3 text-[9px] uppercase tracking-widest text-zinc-100 font-bold animate-pulse"
           >Generating</span
         >
+        <div
+          class="w-32 h-1 mt-3 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50"
+        >
+          <div
+            class="h-full bg-emerald-500 transition-all duration-300 ease-out"
+            style="width: {pipeline.pinGenerationProgress || 0}%"
+          ></div>
+        </div>
       </div>
     {/if}
 
@@ -66,7 +73,9 @@
             <circle
               cx={pin.x}
               cy={pin.y}
-              r="5"
+              r={pipeline.pinGeneratorType === "voronoi"
+                ? pipeline.voronoiPinRadius
+                : 5}
               class="fill-zinc-400 stroke-none hover:fill-emerald-400 transition-all duration-500 ease-out"
             />
           {/each}
@@ -95,6 +104,7 @@
         min={0.1}
         max={1}
         step={0.05}
+        disabled={!pipeline.imageUrl}
         onValueChange={(v) => (imageOpacity = v)}
         class="py-1 cursor-pointer"
       />
@@ -140,7 +150,7 @@
         type={"single"}
         value={pipeline.pinCount}
         min={40}
-        max={360}
+        max={1000}
         step={1}
         onValueChange={handleSliderChange}
         class="py-1 cursor-pointer"

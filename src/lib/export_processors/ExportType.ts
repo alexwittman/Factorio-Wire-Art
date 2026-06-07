@@ -1,1 +1,1 @@
-export type ExportType = "svg" | "csv" | "console-command";
+export type ExportType = "csv" | "console-command";
