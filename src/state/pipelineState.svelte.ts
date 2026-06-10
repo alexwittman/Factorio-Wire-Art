@@ -10,7 +10,10 @@ import { VoronoiPinGenerator } from "$lib/lib/pins/VoronoiPinGenerator";
 import type { ThreadResult } from "$lib/lib/threading/ThreadResult";
 import type { ThreadStats } from "$lib/lib/threading/ThreadStats";
 import { ThreadResultProcessor } from "$lib/lib/threading/ThreadResultProcessor";
-import type { ExportType } from "$lib/lib/export_processors/ExportType";
+import type {
+  ExportOptions,
+  ExportType,
+} from "$lib/lib/export_processors/ExportType";
 import { CsvExportProcessor } from "$lib/lib/export_processors/CsvExportProcessor";
 import { ConsoleCommandExportProcessor } from "$lib/lib/export_processors/ConsoleCommandExportProcessor";
 import type {
@@ -34,7 +37,6 @@ class UnifiedOrchestratorState {
   pinLayout: IPinLayout | null = $state(null);
   pinCount = $state(250);
   voronoiIterations = $state(30);
-  voronoiPinRadius = $state(3);
   pinGenerationProgress = $state(0);
   // TODO: Click to enable/disable pin. Add enabled list to pin layout and toggle
 
@@ -77,7 +79,7 @@ class UnifiedOrchestratorState {
           this.imageSize,
           this.imageSize,
           this.voronoiIterations,
-          this.voronoiPinRadius,
+          0,
         );
       }
       default:
@@ -265,7 +267,7 @@ class UnifiedOrchestratorState {
       });
   }
 
-  export(type: ExportType, scale: number) {
+  export(type: ExportType, options: ExportOptions) {
     switch (type) {
       case "csv":
         return new CsvExportProcessor(this.imageSize).export(
@@ -273,10 +275,11 @@ class UnifiedOrchestratorState {
           this.pinLayout!,
         );
       case "console-command":
-        return new ConsoleCommandExportProcessor(scale, this.imageSize).export(
-          this.threadResults!,
-          this.pinLayout!,
-        );
+        return new ConsoleCommandExportProcessor(
+          options.scale,
+          this.imageSize,
+          options.animationTime,
+        ).export(this.threadResults!, this.pinLayout!);
       default:
         return;
     }

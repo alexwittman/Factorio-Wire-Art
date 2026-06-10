@@ -47,7 +47,7 @@
   class="w-full flex flex-col gap-6 items-center justify-center max-w-md mx-auto"
 >
   <div
-    class="w-full aspect-square rounded-xl border border-zinc-800 bg-zinc-950 relative overflow-hidden shadow-2xl shrink-0 flex flex-wrap gap-2 p-2"
+    class="w-full aspect-square rounded-xl bg-zinc-950 relative overflow-hidden shadow-2xl shrink-0 flex flex-wrap gap-2 p-2"
   >
     {#if !pipeline.isProcessingThreads && pipeline.liveFrames.length === 0}
       <div
@@ -64,7 +64,7 @@
     {:else}
       {#each pipeline.liveFrames as _, i}
         <div
-          class="flex-1 min-w-[45%] aspect-square rounded-lg border border-zinc-800 bg-white relative overflow-hidden shadow-lg"
+          class="flex-1 min-w-[45%] aspect-square rounded-lg relative overflow-hidden shadow-lg"
         >
           <canvas
             bind:this={canvasElements[i]}

@@ -17,9 +17,12 @@ wire_art_pin.pictures = {
     shift = { 0, 0 }
 }
 
--- TODO: Disable power ui in click
+wire_art_pin.selectable_in_game = false
+wire_art_pin.selection_box = nil
+
 wire_art_pin.gui_mode = "none"
 wire_art_pin.collision_box = { { -0, -0 }, { 0, 0 } }
+wire_art_pin.collision_mask = { layers = {} }
 
 local center_point = { 0, 0 }
 wire_art_pin.connection_points = {

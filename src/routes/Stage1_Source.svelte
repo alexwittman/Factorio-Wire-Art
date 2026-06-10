@@ -22,7 +22,7 @@
 
 <div class="flex flex-col gap-4 w-full max-w-md">
   <div
-    class="w-full aspect-square rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-center relative overflow-hidden shadow-inner"
+    class="w-full aspect-square rounded-xl bg-zinc-950 flex items-center justify-center relative overflow-hidden shadow-inner"
   >
     {#if pipeline.imageUrl}
       <img

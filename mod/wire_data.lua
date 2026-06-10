@@ -6,12 +6,12 @@ local function set_world_wire(name, tint)
     local sprite = data.raw["utility-sprites"]["default"][name]
     sprite.filename = "__wire_art__/graphics/hr-generic-wire_white_0.2.png"
     sprite.tint = tint
+    sprite.blend_mode = "additive-soft"
 end
 
+-- TODO: Add global startup setting for this in case you want shadows
 data.raw["utility-sprites"]["default"].wire_shadow.filename = "__core__/graphics/empty.png"
 
 set_world_wire("red_wire", red)
 set_world_wire("green_wire", green)
 set_world_wire("copper_wire", blue)
-
--- TODO: Disable wire highlight sprites (use global startup setting)

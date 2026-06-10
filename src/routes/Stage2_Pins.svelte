@@ -29,7 +29,7 @@
   class="w-full flex flex-col gap-6 items-center justify-center max-w-md mx-auto"
 >
   <div
-    class="w-full aspect-square rounded-xl border border-zinc-800 bg-zinc-950 relative shadow-2xl overflow-hidden shrink-0"
+    class="w-full aspect-square rounded-xl bg-zinc-950 relative shadow-2xl overflow-hidden shrink-0"
   >
     {#if pipeline.isProcessingPins}
       <div
@@ -73,9 +73,7 @@
             <circle
               cx={pin.x}
               cy={pin.y}
-              r={pipeline.pinGeneratorType === "voronoi"
-                ? pipeline.voronoiPinRadius
-                : 5}
+              r={5}
               class="fill-zinc-400 stroke-none hover:fill-emerald-400 transition-all duration-500 ease-out"
             />
           {/each}
@@ -182,23 +180,6 @@
                 max={50}
                 step={1}
                 onValueChange={(v) => (pipeline.voronoiIterations = v)}
-                disabled={isDisabled}
-              />
-            </div>
-            <div class="space-y-1">
-              <div class="flex justify-between text-[9px]">
-                <span class="text-zinc-500 uppercase">Pin Radius</span>
-                <span class="text-zinc-300"
-                  >{pipeline.voronoiPinRadius || 5}px</span
-                >
-              </div>
-              <Slider
-                type="single"
-                value={pipeline.voronoiPinRadius}
-                min={1}
-                max={10}
-                step={0.5}
-                onValueChange={(v) => (pipeline.voronoiPinRadius = v)}
                 disabled={isDisabled}
               />
             </div>

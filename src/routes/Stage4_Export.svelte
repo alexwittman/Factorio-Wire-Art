@@ -1,10 +1,13 @@
 <script lang="ts">
   import { pipeline } from "../state/pipelineState.svelte";
   import { Slider } from "$lib/components/ui/slider";
-  import type { ExportType } from "$lib/lib/export_processors/ExportType";
+  import type {
+    ExportOptions,
+    ExportType,
+  } from "$lib/lib/export_processors/ExportType";
 
-  function exportThreads(type: ExportType, scale: number = 1) {
-    pipeline.export(type, scale);
+  function exportThreads(type: ExportType, options: ExportOptions) {
+    pipeline.export(type, options);
   }
 
   let modAcknowledged = $state(false);
@@ -15,6 +18,11 @@
         exportScale >=
         64,
   );
+  let animationTime = $state(0);
+  let exportOptions: ExportOptions = $derived({
+    scale: exportScale,
+    animationTime: animationTime,
+  });
 </script>
 
 <div class="w-full flex flex-col gap-6">
@@ -60,7 +68,7 @@
             I acknowledge I have installed the wire art mod in Factorio.
           </span>
           <span class="text-[9px] text-amber-500/70 font-mono">
-            If you have not, it will not look the same.
+            This will not work without it.
           </span>
         </div>
       </div>
@@ -130,24 +138,51 @@
       {/if}
     </button>
 
-    <button
-      type="button"
-      onclick={() => exportThreads("console-command", exportScale)}
-      disabled={!pipeline.threadResults ||
-        !modAcknowledged ||
-        pipeline.isProcessingThreads}
-      class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+    <div
+      class="w-full flex flex-col gap-2 p-3 rounded-lg border border-zinc-800 bg-zinc-900/20"
     >
-      <span
-        class="text-[11px] font-bold font-mono tracking-wider text-zinc-200 uppercase"
+      <button
+        type="button"
+        onclick={() => exportThreads("console-command", exportOptions)}
+        disabled={!pipeline.threadResults ||
+          !modAcknowledged ||
+          pipeline.isProcessingThreads}
+        class="w-full text-left disabled:opacity-50 disabled:cursor-not-allowed group"
       >
-        Console Command
-      </span>
-      <span class="text-[10px] text-zinc-500"
-        >Paste into the console and run this command to place the wire art at
-        your current position.</span
-      >
-    </button>
+        <span
+          class="text-[11px] font-bold font-mono tracking-wider text-zinc-200 uppercase"
+        >
+          Console Command
+        </span>
+        <span class="text-[10px] text-zinc-500 block">
+          Paste into the console and run this command to place the wire art at
+          your current position.
+        </span>
+      </button>
+
+      <div class="space-y-1 mt-1 border-t border-zinc-800/50 pt-2">
+        <div class="flex justify-between text-[9px]">
+          <span class="text-zinc-500 uppercase">Build Animation Time</span>
+          <span class="text-zinc-300 font-mono">
+            {#if animationTime == 0}
+              Instant
+            {:else}
+              {animationTime}s
+            {/if}
+          </span>
+        </div>
+        <Slider
+          type="single"
+          value={animationTime}
+          min={0}
+          max={60}
+          step={1}
+          onValueChange={(v) => (animationTime = v)}
+          class="py-1 cursor-pointer"
+          disabled={!modAcknowledged}
+        />
+      </div>
+    </div>
   </div>
   <div class="flex flex-col gap-1">
     <h3
@@ -158,7 +193,7 @@
 
     <button
       type="button"
-      onclick={() => exportThreads("csv")}
+      onclick={() => exportThreads("csv", exportOptions)}
       disabled={!pipeline.threadResults || pipeline.isProcessingThreads}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >

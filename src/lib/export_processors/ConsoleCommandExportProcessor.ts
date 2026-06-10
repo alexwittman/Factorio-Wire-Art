@@ -4,79 +4,53 @@ import type { ThreadResult } from "../threading/ThreadResult";
 import { IExportProcessor } from "./IExportProcessor";
 
 export class ConsoleCommandExportProcessor implements IExportProcessor {
-  private scale: number;
-  private imageSize: number;
+  constructor(
+    private scale: number,
+    private imageSize: number,
+    private buildTime: number,
+  ) {}
 
-  constructor(scale: number, imageSize: number) {
-    this.scale = scale;
-    this.imageSize = imageSize;
+  private getConnectorIDs(color: string): number[] {
+    const map: Record<string, number[]> = {
+      red: [1],
+      green: [2],
+      blue: [5],
+      white: [1, 2, 5],
+    };
+    return map[color] ?? [5];
   }
 
-  private getConnectors(color: string): string[] {
-    switch (color) {
-      case "blue":
-        return ["pole_copper"];
-      case "green":
-        return ["circuit_green"];
-      case "red":
-        return ["circuit_red"];
-      case "white":
-        return ["pole_copper", "circuit_green", "circuit_red"];
-      default:
-        return ["pole_copper"];
-    }
+  private generateData(results: ThreadResult[], layout: IPinLayout): string {
+    const pins = layout.pins.map((p) => ({
+      x: (p.x / this.imageSize) * this.scale - this.scale / 2,
+      y: (p.y / this.imageSize) * this.scale - this.scale / 2,
+    }));
+
+    const groups: { type: number; pairs: string[] }[] = [];
+    results.forEach((res) => {
+      this.getConnectorIDs(res.color).forEach((type) => {
+        groups.push({
+          type,
+          pairs: res.sequence.map((s) => `{${s[0] + 1}, ${s[1] + 1}}`),
+        });
+      });
+    });
+
+    const maxPairs = Math.max(...groups.map((g) => g.pairs.length));
+    const connections_per_tick =
+      this.buildTime == 0
+        ? maxPairs
+        : Math.max(1, Math.ceil(maxPairs / (this.buildTime * 60)));
+
+    return `{
+      pins = {${pins.map((p) => `{x=${p.x.toFixed(2)}, y=${p.y.toFixed(2)}}`).join(", ")}},
+      connections_per_tick = ${connections_per_tick},
+      groups = {${groups.map((g) => `{type=${g.type}, pairs={${g.pairs.join(", ")}}}`).join(", ")}}
+    }`;
   }
 
   export(results: ThreadResult[], layout: IPinLayout): void {
-    const pinPositions = layout.pins.map((p) => {
-      const scaledX = (p.x / this.imageSize) * this.scale;
-      const scaledY = (p.y / this.imageSize) * this.scale;
-      const offset = this.scale / 2;
-      return `{x = center.x + (${scaledX.toFixed(2)} - ${offset.toFixed(2)}), y = center.y + (${scaledY.toFixed(2)} - ${offset.toFixed(2)})}`;
-    });
-
-    const connectionBlocks = results
-      .flatMap((res) => {
-        const connections = res.sequence.map(
-          ([s, e]) => `{${s + 1}, ${e + 1}}`,
-        );
-        const connectors = this.getConnectors(res.color || "black");
-
-        return connectors.map(
-          (conn) =>
-            `{connector = defines.wire_connector_id.${conn}, connections = {${connections.join(", ")}}}`,
-        );
-      })
-      .join(", ");
-
-    const command = `/c 
-      local surface = game.player.surface
-      local center = game.player.position
-      local pole_name = "wire-art-pin"
-      local placed_poles = {}
-      local pins = {${pinPositions.join(", ")}}
-      
-      for i, pos in ipairs(pins) do
-          local pole = surface.create_entity{
-              name = pole_name, position = pos, force = game.player.force, create_build_effect_smoke = false
-          }
-          if pole then
-              table.insert(placed_poles, pole)
-          end
-      end
-      
-      local groups = {${connectionBlocks}}
-      for _, group in ipairs(groups) do
-          local wire_type = group.connector
-          for _, pair in ipairs(group.connections) do
-              local p1 = placed_poles[pair[1]]
-              local p2 = placed_poles[pair[2]]
-              if p1 and p2 then
-                  p1.get_wire_connector(wire_type, true).connect_to(p2.get_wire_connector(wire_type, true), false)
-              end
-          end
-      end`.replace(/\s+/g, " ");
-
+    const command = `/build-wire-art ${this.generateData(results, layout).replace(/\s+/g, " ")}`;
     navigator.clipboard
       .writeText(command.trim())
       .then(() =>

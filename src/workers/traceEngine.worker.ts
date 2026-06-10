@@ -19,7 +19,7 @@ self.onmessage = function (e) {
 
   const imgMasked = new Float32Array(matrix);
   const imgResult = new Float32Array(width * width);
-  imgResult.fill(0.95);
+  imgResult.fill(0.99);
 
   let oldPin = 0;
   const lines: Array<[number, number]> = [];
