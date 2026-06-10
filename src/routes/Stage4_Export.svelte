@@ -11,6 +11,7 @@
   }
 
   let modAcknowledged = $state(false);
+  let blueprintName = $state("Wire Art");
   let exportScale = $state(16);
   let blueprintError = $derived(
     pipeline.threadStats &&
@@ -22,6 +23,7 @@
   let exportOptions: ExportOptions = $derived({
     scale: exportScale,
     animationTime: animationTime,
+    name: blueprintName,
   });
 </script>
 
@@ -111,35 +113,50 @@
       />
     </div>
 
-    <button
-      type="button"
-      disabled={!pipeline.threadResults ||
-        !modAcknowledged ||
-        blueprintError ||
-        pipeline.isProcessingThreads}
-      class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+    <div
+      class="w-full flex flex-col gap-2 p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors"
     >
-      <span
-        class="text-[11px] font-bold font-mono tracking-wider text-zinc-200 uppercase"
+      <button
+        type="button"
+        onclick={() => exportThreads("blueprint", exportOptions)}
+        disabled={!pipeline.threadResults ||
+          !modAcknowledged ||
+          blueprintError ||
+          pipeline.isProcessingThreads}
+        class="w-full text-left disabled:opacity-50 disabled:cursor-not-allowed group"
       >
-        Blueprint String
-      </span>
-      <span class="text-[10px] text-zinc-500"
-        >Import this string into Factorio to place as a blueprint.</span
-      >
-      {#if blueprintError}
-        <span class="text-[10px] text-red-500"
-          >Longest wire exceeds Factorio maximum length of 64 tiles, so
-          blueprint will not look the same.</span
+        <span
+          class="text-[11px] font-bold font-mono tracking-wider text-zinc-200 uppercase"
         >
-        <span class="text-[10px] text-red-500"
-          >Reduce the scale or use the cosole command option instead.</span
-        >
-      {/if}
-    </button>
+          Blueprint String
+        </span>
+        <span class="text-[10px] text-zinc-500 block">
+          Import this string into Factorio to place as a blueprint.
+        </span>
+        {#if blueprintError}
+          <span class="text-[10px] text-red-500"
+            >Longest wire exceeds Factorio maximum length of 64 tiles, so
+            blueprint will not look the same.</span
+          >
+          <span class="text-[10px] text-red-500"
+            >Reduce the scale or use the cosole command option instead.</span
+          >
+        {/if}
+      </button>
+
+      <div class="space-y-1 mt-1 border-t border-zinc-800/50 pt-2">
+        <span class="text-zinc-500 text-[9px] uppercase">Blueprint Name</span>
+        <input
+          type="text"
+          placeholder="Blueprint Name"
+          bind:value={blueprintName}
+          class="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-[11px] text-zinc-300 font-mono focus:outline-none focus:border-zinc-600"
+        />
+      </div>
+    </div>
 
     <div
-      class="w-full flex flex-col gap-2 p-3 rounded-lg border border-zinc-800 bg-zinc-900/20"
+      class="w-full flex flex-col gap-2 p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors"
     >
       <button
         type="button"

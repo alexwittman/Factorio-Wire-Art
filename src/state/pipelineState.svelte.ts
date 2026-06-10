@@ -26,6 +26,7 @@ import { ILiveFrameProcessor } from "$lib/lib/frame_processors/ILiveFrameProcess
 import { RGBCompositeFrameProcessor } from "$lib/lib/frame_processors/RGBCompositeFrameProcessor";
 import { RecolorLiveFrameProcessor } from "$lib/lib/frame_processors/RecolorLiveFrameProcessor";
 import { RGBImageProcessor } from "$lib/lib/image_processors/RGBImageProcessor";
+import { BlueprintExportProcessor } from "$lib/lib/export_processors/BlueprintExportProcessor";
 
 class UnifiedOrchestratorState {
   imageUrl = $state("");
@@ -279,6 +280,12 @@ class UnifiedOrchestratorState {
           options.scale,
           this.imageSize,
           options.animationTime,
+        ).export(this.threadResults!, this.pinLayout!);
+      case "blueprint":
+        return new BlueprintExportProcessor(
+          options.scale,
+          this.imageSize,
+          options.name,
         ).export(this.threadResults!, this.pinLayout!);
       default:
         return;
