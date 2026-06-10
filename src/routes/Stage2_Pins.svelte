@@ -88,7 +88,7 @@
       : 'opacity-100'}"
   >
     <div class="w-full space-y-1">
-      <div class="flex justify-between text-[9px]">
+      <div class="flex justify-between text-[9px] pb-2">
         <span class="text-zinc-500 uppercase tracking-wider font-bold"
           >Image Opacity</span
         >
@@ -167,7 +167,7 @@
           </Accordion.Trigger>
           <Accordion.Content class="space-y-4 pt-2">
             <div class="space-y-1">
-              <div class="flex justify-between text-[9px]">
+              <div class="flex justify-between text-[9px] pb-2">
                 <span class="text-zinc-500 uppercase">Iterations</span>
                 <span class="text-zinc-300"
                   >{pipeline.voronoiIterations || 10}</span

@@ -88,7 +88,7 @@
     <div
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
     >
-      <div class="flex items-center justify-between text-[9px]">
+      <div class="flex items-center justify-between text-[9px] pb-2">
         <span class="text-zinc-500 uppercase tracking-wider font-bold">
           Scale Configuration
         </span>
@@ -178,7 +178,7 @@
       </button>
 
       <div class="space-y-1 mt-1 border-t border-zinc-800/50 pt-2">
-        <div class="flex justify-between text-[9px]">
+        <div class="flex justify-between text-[9px] pb-2">
           <span class="text-zinc-500 uppercase">Build Animation Time</span>
           <span class="text-zinc-300 font-mono">
             {#if animationTime == 0}
