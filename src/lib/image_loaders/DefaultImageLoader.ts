@@ -1,7 +1,11 @@
 import { IImageLoader } from "./IImageLoader";
 
 export class DefaultImageLoader implements IImageLoader {
-  async load(url: string, size: number): Promise<Float32Array> {
+  async load(
+    url: string,
+    size: number,
+    letterboxed: boolean = false,
+  ): Promise<Float32Array> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
@@ -13,11 +17,29 @@ export class DefaultImageLoader implements IImageLoader {
         const canvas = new OffscreenCanvas(size, size);
         const ctx = canvas.getContext("2d")!;
 
-        const minEdge = Math.min(img.width, img.height);
-        const left = (img.width - minEdge) / 2;
-        const top = (img.height - minEdge) / 2;
-
-        ctx.drawImage(img, left, top, minEdge, minEdge, 0, 0, size, size);
+        if (!letterboxed) {
+          const minEdge = Math.min(img.width, img.height);
+          const left = (img.width - minEdge) / 2;
+          const top = (img.height - minEdge) / 2;
+          ctx.drawImage(img, left, top, minEdge, minEdge, 0, 0, size, size);
+        } else {
+          const ratio = Math.min(size / img.width, size / img.height);
+          const newWidth = img.width * ratio;
+          const newHeight = img.height * ratio;
+          const x = (size - newWidth) / 2;
+          const y = (size - newHeight) / 2;
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            img.width,
+            img.height,
+            x,
+            y,
+            newWidth,
+            newHeight,
+          );
+        }
 
         const imageData = ctx.getImageData(0, 0, size, size);
         const rawData = imageData.data;

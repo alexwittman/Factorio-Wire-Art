@@ -31,6 +31,7 @@ import { BlueprintExportProcessor } from "$lib/lib/export_processors/BlueprintEx
 class UnifiedOrchestratorState {
   imageUrl = $state("");
   imageSize = 1001;
+  isLetterboxed = $state(false);
 
   latestRequestId = 0;
   isProcessingPins = $state(false);
@@ -73,6 +74,7 @@ class UnifiedOrchestratorState {
         let image = await new DefaultImageLoader().load(
           this.imageUrl,
           this.imageSize,
+          this.isLetterboxed,
         );
         image = new GreyscaleImageProcessor().process(image);
         return new VoronoiPinGenerator(
@@ -199,7 +201,7 @@ class UnifiedOrchestratorState {
     });
 
     new DefaultImageLoader()
-      .load(this.imageUrl, this.imageSize)
+      .load(this.imageUrl, this.imageSize, this.isLetterboxed)
       .then((originalImage) => {
         workerConfigs.forEach((config) => {
           let image: Float32Array = originalImage.slice();

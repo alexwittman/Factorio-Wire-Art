@@ -14,10 +14,6 @@
 
     pipeline.setImageUrl(imageUrl);
   }
-
-  // TODO: Add basic photo manipulation here
-  // - Letterbox vs Crop
-  // - Brightness Slider
 </script>
 
 <div class="flex flex-col gap-4 w-full max-w-md">
@@ -28,7 +24,9 @@
       <img
         src={pipeline.imageUrl}
         alt="Source target preview"
-        class="w-full h-full object-cover"
+        class="w-full h-full {pipeline.isLetterboxed
+          ? 'object-contain'
+          : 'object-cover'}"
       />
     {:else}
       <div class="text-zinc-700 text-xs font-mono uppercase tracking-widest">
@@ -51,4 +49,38 @@
       onchange={handleImageSelection}
     />
   </label>
+
+  <div
+    class="relative flex flex-col gap-4 w-full bg-zinc-900/20 border border-zinc-800/60 rounded-xl p-4 font-mono shadow-xl transition-opacity {!pipeline.imageUrl
+      ? 'opacity-50'
+      : 'opacity-100'}"
+  >
+    <div class="space-y-1.5">
+      <span
+        class="text-[9px] uppercase text-zinc-500 tracking-wider font-bold block"
+        >Crop Style</span
+      >
+      <div
+        class="grid grid-cols-2 gap-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-800/80"
+      >
+        {#each [{ letterboxed: false, name: "Cropped" }, { letterboxed: true, name: "Letterboxed" }] as type}
+          <button
+            type="button"
+            data-testid={`crop-style-${type.letterboxed}`}
+            onclick={() => (pipeline.isLetterboxed = type.letterboxed)}
+            disabled={pipeline.isProcessingPins || pipeline.isProcessingThreads}
+            class="py-1.5 rounded-md text-[9px] font-bold uppercase transition-all flex items-center justify-center gap-1 {pipeline.isLetterboxed ===
+            type.letterboxed
+              ? 'bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700'
+              : 'text-zinc-500 hover:text-zinc-300'} {pipeline.isProcessingPins ||
+            pipeline.isProcessingThreads
+              ? 'cursor-not-allowed'
+              : ''}"
+          >
+            {type.name}
+          </button>
+        {/each}
+      </div>
+    </div>
+  </div>
 </div>

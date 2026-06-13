@@ -62,7 +62,9 @@
         src={pipeline.imageUrl}
         alt="Tracing alignment guide"
         style="opacity: {imageOpacity};"
-        class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-opacity duration-150"
+        class="absolute inset-0 w-full h-full pointer-events-none select-none transition-opacity duration-150 {pipeline.isLetterboxed
+          ? 'object-contain'
+          : 'object-cover'}"
       />
       {#if pipeline.pinLayout}
         <svg
