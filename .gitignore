@@ -23,4 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
-data/images
+data/**/*
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

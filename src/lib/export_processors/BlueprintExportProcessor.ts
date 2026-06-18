@@ -8,11 +8,18 @@ export class BlueprintExportProcessor implements IExportProcessor {
   scale: number;
   imageSize: number;
   name: string;
+  onExport: (blueprint: string) => void;
 
-  constructor(scale: number, imageSize: number, name: string) {
+  constructor(
+    scale: number,
+    imageSize: number,
+    name: string,
+    onExport: (blueprint: string) => void,
+  ) {
     this.scale = scale;
     this.imageSize = imageSize;
     this.name = name;
+    this.onExport = onExport;
   }
 
   export(results: ThreadResult[], layout: IPinLayout): void {
@@ -22,9 +29,11 @@ export class BlueprintExportProcessor implements IExportProcessor {
     const base64 = btoa(String.fromCharCode(...compressed));
     const finalString = "0" + base64;
 
+    this.onExport(finalString);
     navigator.clipboard.writeText(finalString).then(() => {
       toast("Copied to Clipboard", {
         description: "Import into Factorio as a blueprint.",
+        class: "export-toast",
       });
     });
   }

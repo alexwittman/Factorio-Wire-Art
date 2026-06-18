@@ -1,0 +1,20 @@
+{
+    "headless": false,
+    "frames": {
+        "fps": -1,
+        "frame_count": -1,
+        "letterboxed": true
+    },
+    "pins": {
+        "type": "voronoi",
+        "count": 500,
+        "iterations": 30
+    },
+    "optimize":{
+        "theme": "rgb",
+        "wire_count": 5000
+    },
+    "export": {
+        "scale": 16
+    }
+}

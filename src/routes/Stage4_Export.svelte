@@ -40,6 +40,7 @@
       <div class="flex items-center gap-3">
         <input
           type="checkbox"
+          data-testid="mod-acknowledgement"
           bind:checked={modAcknowledged}
           class="accent-amber-500 w-4 h-4"
         />
@@ -101,6 +102,7 @@
 
       <Slider
         type={"single"}
+        data-testid="export-scale-slider"
         value={exportScale}
         min={8}
         max={64}
@@ -118,6 +120,7 @@
     >
       <button
         type="button"
+        data-testid="export-blueprint"
         onclick={() => exportThreads("blueprint", exportOptions)}
         disabled={!pipeline.threadResults ||
           !modAcknowledged ||
@@ -160,6 +163,7 @@
     >
       <button
         type="button"
+        data-testid="export-console"
         onclick={() => exportThreads("console-command", exportOptions)}
         disabled={!pipeline.threadResults ||
           !modAcknowledged ||
@@ -190,6 +194,7 @@
         </div>
         <Slider
           type="single"
+          data-testid="export-console-animation-time-slider"
           value={animationTime}
           min={0}
           max={60}
@@ -210,6 +215,7 @@
 
     <button
       type="button"
+      data-testid="export-csv"
       onclick={() => exportThreads("csv", exportOptions)}
       disabled={!pipeline.threadResults || pipeline.isProcessingThreads}
       class="w-full flex flex-col items-start p-3 rounded-lg border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
@@ -224,4 +230,12 @@
       >
     </button>
   </div>
+
+  <span
+    data-testid="export-data"
+    style="position: absolute; left: -99999px; top: -99999px;"
+    aria-hidden="true"
+  >
+    {pipeline.exportData}
+  </span>
 </div>

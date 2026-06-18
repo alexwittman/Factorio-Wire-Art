@@ -49,6 +49,8 @@ class UnifiedOrchestratorState {
   threadStats: ThreadStats | null = $state(null);
   threadColorTheme: ThreadColorTheme = $state("w");
 
+  exportData: string = $state("");
+
   config = $state({
     numLines: 3000,
     minLoop: 3,
@@ -282,12 +284,14 @@ class UnifiedOrchestratorState {
           options.scale,
           this.imageSize,
           options.animationTime,
+          (command) => (this.exportData = command),
         ).export(this.threadResults!, this.pinLayout!);
       case "blueprint":
         return new BlueprintExportProcessor(
           options.scale,
           this.imageSize,
           options.name,
+          (blueprint) => (this.exportData = blueprint),
         ).export(this.threadResults!, this.pinLayout!);
       default:
         return;

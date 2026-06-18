@@ -49,6 +49,18 @@
   <div
     class="w-full aspect-square rounded-xl bg-zinc-950 relative overflow-hidden shadow-2xl shrink-0 flex flex-wrap gap-2 p-2"
   >
+    {#if pipeline.isProcessingThreads}
+      <div
+        class="absolute inset-0 z-50 flex flex-col items-center justify-center"
+      >
+        <Spinner
+          data-testid="wire-generating-spinner"
+          color="white"
+          class="opacity-0"
+        />
+      </div>
+    {/if}
+
     {#if !pipeline.isProcessingThreads && pipeline.liveFrames.length === 0}
       <div
         class="w-full h-full flex flex-col items-center justify-center text-center space-y-1.5 text-zinc-600 font-mono text-[11px] uppercase tracking-wider"
@@ -92,6 +104,7 @@
         {#each [{ id: "w", name: "Monochrome" }, { id: "rgb", name: "Color" }] as type}
           <button
             type="button"
+            data-testid={`wire-theme-${type.id}`}
             onclick={() => updateThreadColorTheme(type.id as ThreadColorTheme)}
             disabled={isDisabled}
             class="py-1.5 rounded-md text-[9px] font-bold uppercase transition-all flex items-center justify-center gap-1 {pipeline.threadColorTheme ===
@@ -119,10 +132,11 @@
       </div>
       <Slider
         type={"single"}
+        data-testid="wire-count-slider"
         value={pipeline.config.numLines || 2000}
-        min={500}
-        max={25 * pipeline.pinCount}
-        step={50}
+        min={1000}
+        max={25000}
+        step={100}
         disabled={isDisabled}
         onValueChange={handleLinesChange}
         class="py-1"
@@ -147,6 +161,7 @@
             </div>
             <Slider
               type={"single"}
+              data-testid="wire-weight-slider"
               value={pipeline.config.lineWeight || 0.05}
               min={0.01}
               max={1}
@@ -164,6 +179,7 @@
             </div>
             <Slider
               type={"single"}
+              data-testid="wire-width-slider"
               value={pipeline.config.lineWidth || 3}
               min={1}
               max={10}
@@ -179,6 +195,7 @@
     <div class="pt-2 border-t border-zinc-900 space-y-2">
       <button
         type="button"
+        data-testid="generate-wires"
         disabled={isDisabled}
         onclick={() => pipeline.runTraceOptimization()}
         class="relative w-full py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 border overflow-hidden {isDisabled

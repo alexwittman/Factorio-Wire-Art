@@ -8,6 +8,7 @@ export class ConsoleCommandExportProcessor implements IExportProcessor {
     private scale: number,
     private imageSize: number,
     private buildTime: number,
+    private onExport: (command: string) => void,
   ) {}
 
   private getConnectorIDs(color: string): number[] {
@@ -51,11 +52,13 @@ export class ConsoleCommandExportProcessor implements IExportProcessor {
 
   export(results: ThreadResult[], layout: IPinLayout): void {
     const command = `/build-wire-art ${this.generateData(results, layout).replace(/\s+/g, " ")}`;
+    this.onExport(command);
     navigator.clipboard
       .writeText(command.trim())
       .then(() =>
         toast("Copied to Clipboard", {
           description: "Paste into the Factorio console and run to import.",
+          class: "export-toast",
         }),
       )
       .catch((err) => console.error("Clipboard error:", err));

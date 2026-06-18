@@ -68,17 +68,20 @@ export class VoronoiPinGenerator implements IPinGenerator {
           points[i * 2 + 1] = centroidsY[i] / weights[i];
         }
       }
-      yield this.createLayout(points);
+      yield this.createLayout(points, iter === this.iterations - 1);
     }
 
-    return this.createLayout(points);
+    return this.createLayout(points, true);
   }
 
   private getBrightness(x: number, y: number): number {
     return 1 - this.image[y * this.width + x];
   }
 
-  private createLayout(points: Float64Array): IPinLayout {
+  private createLayout(
+    points: Float64Array,
+    calculateAdjacencies: boolean,
+  ): IPinLayout {
     const pins: IPoint2D[] = [];
     for (let i = 0; i < points.length / 2; i++) {
       pins.push({ x: points[i * 2], y: points[i * 2 + 1] });
@@ -89,11 +92,13 @@ export class VoronoiPinGenerator implements IPinGenerator {
       () => [],
     );
 
-    for (let i = 0; i < pins.length; i++) {
-      for (let j = i + 1; j < pins.length; j++) {
-        if (!this.isBlocked(pins[i], pins[j], pins, i, j, this.pinRadius)) {
-          adjacencies[i].push(j);
-          adjacencies[j].push(i);
+    if (calculateAdjacencies) {
+      for (let i = 0; i < pins.length; i++) {
+        for (let j = i + 1; j < pins.length; j++) {
+          if (!this.isBlocked(pins[i], pins[j], pins, i, j, this.pinRadius)) {
+            adjacencies[i].push(j);
+            adjacencies[j].push(i);
+          }
         }
       }
     }

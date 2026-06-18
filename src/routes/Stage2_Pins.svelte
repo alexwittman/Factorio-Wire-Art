@@ -35,7 +35,7 @@
       <div
         class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/20"
       >
-        <Spinner color="white" />
+        <Spinner data-testid="pin-generating-spinner" color="white" />
         <span
           class="mt-3 text-[9px] uppercase tracking-widest text-zinc-100 font-bold animate-pulse"
           >Generating</span
@@ -100,6 +100,7 @@
       </div>
       <Slider
         type={"single"}
+        data-testid={`pin-image-opacity`}
         value={imageOpacity}
         min={0.1}
         max={1}
@@ -120,6 +121,7 @@
         {#each ["circle", "square", "voronoi"] as type}
           <button
             type="button"
+            data-testid={`pin-layout-${type}`}
             onclick={() => updateGeometryType(type as PinGeneratorType)}
             disabled={isDisabled}
             class="py-1.5 rounded-md text-[9px] font-bold uppercase transition-all flex items-center justify-center gap-1 {pipeline.pinGeneratorType ===
@@ -147,6 +149,7 @@
         </span>
       </div>
       <Slider
+        data-testid="pin-count-slider"
         type={"single"}
         value={pipeline.pinCount}
         min={40}
@@ -176,6 +179,7 @@
                 >
               </div>
               <Slider
+                data-testid="voronoi-iterations"
                 type="single"
                 value={pipeline.voronoiIterations}
                 min={1}
