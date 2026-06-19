@@ -7,9 +7,7 @@
   import { Toaster } from "svelte-sonner";
 </script>
 
-<main
-  class="h-screen w-screen flex flex-col bg-zinc-950 text-zinc-50 overflow-hidden font-sans"
->
+<main class="lg:h-screen flex flex-col bg-zinc-950 text-zinc-50 font-sans">
   <header
     class="h-14 border-b border-zinc-800 flex items-center px-6 bg-zinc-900/50"
   >
@@ -18,9 +16,9 @@
     </h1>
   </header>
 
-  <div class="flex-1 grid grid-cols-4 gap-4 p-4 min-h-0">
+  <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
     {#each [{ title: "1. Select Image", comp: Stage1Source }, { title: "2. Generate Pins", comp: Stage2Pins }, { title: "3. Run Optimization", comp: Stage3Trace }, { title: "4. Export", comp: Stage4Export }] as col}
-      <section class="flex flex-col gap-2 min-h-0">
+      <section class="flex flex-col gap-2">
         <h2
           class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1"
         >
