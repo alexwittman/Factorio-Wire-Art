@@ -10,5 +10,5 @@ export default defineConfig({
       $lib: path.resolve(__dirname, "./src"),
     },
   },
-  base: process.env.NODE_ENV === "production" ? "/string-art-app/" : "/",
+  base: process.env.NODE_ENV === "production" ? "/Factorio-Wire-Art" : "/",
 });
