@@ -122,12 +122,12 @@
     <div class="space-y-2">
       <div class="flex items-center justify-between text-[9px]">
         <span class="text-zinc-500 uppercase tracking-wider font-bold"
-          >Target Line Count</span
+          >Target Wire Count</span
         >
         <span
           class="text-emerald-400 font-bold bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-900/40"
         >
-          {pipeline.config.numLines || 2000} Lines
+          {pipeline.config.numLines || 2000} Wires
         </span>
       </div>
       <Slider
@@ -152,9 +152,9 @@
           Advanced Settings
         </Accordion.Trigger>
         <Accordion.Content class="space-y-4 pt-2">
-          <div class="space-y-1">
+          <div class="space-y-2">
             <div class="flex justify-between text-[9px]">
-              <span class="text-zinc-500 uppercase">Line Weight</span>
+              <span class="text-zinc-500 uppercase">Wire Weight</span>
               <span class="text-zinc-300"
                 >{pipeline.config.lineWeight || 0.05}</span
               >
@@ -168,11 +168,12 @@
               step={0.01}
               disabled={isDisabled}
               onValueChange={handleWeightChange}
+              class="py-1"
             />
           </div>
-          <div class="space-y-1">
+          <div class="space-y-2">
             <div class="flex justify-between text-[9px]">
-              <span class="text-zinc-500 uppercase">Line Width</span>
+              <span class="text-zinc-500 uppercase">Wire Width</span>
               <span class="text-zinc-300"
                 >{pipeline.config.lineWidth || 3}px</span
               >
@@ -186,6 +187,7 @@
               step={1}
               disabled={isDisabled}
               onValueChange={handleWidthChange}
+              class="py-1"
             />
           </div>
         </Accordion.Content>

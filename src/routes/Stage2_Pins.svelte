@@ -113,7 +113,7 @@
     <div class="space-y-1.5">
       <span
         class="text-[9px] uppercase text-zinc-500 tracking-wider font-bold block"
-        >Pin Layout</span
+        >Pole Layout</span
       >
       <div
         class="grid grid-cols-3 gap-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-800/80"
@@ -140,12 +140,12 @@
     <div class="space-y-2 pt-1">
       <div class="flex items-center justify-between text-[9px]">
         <span class="text-zinc-500 uppercase tracking-wider font-bold"
-          >Pin Count</span
+          >Pole Count</span
         >
         <span
           class="text-emerald-400 font-bold bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-900/40"
         >
-          {pipeline.pinCount} Pins
+          {pipeline.pinCount} Poles
         </span>
       </div>
       <Slider

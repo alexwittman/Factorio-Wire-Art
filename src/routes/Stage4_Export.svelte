@@ -68,7 +68,7 @@
             Mod required before importing to factorio
           </span>
           <span class="text-[9px] text-amber-500/70 font-mono">
-            I acknowledge I have installed the wire art mod in Factorio.
+            I acknowledge I have installed the Wire Art mod in Factorio.
           </span>
           <span class="text-[9px] text-amber-500/70 font-mono">
             This will not work without it.
