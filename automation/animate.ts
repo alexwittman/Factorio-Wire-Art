@@ -21,12 +21,14 @@ interface ExportConfig {
 
 interface FrameConfig {
   fps: number;
+  frame_skip: number;
   frame_count: number;
   letterboxed: boolean;
 }
 
 interface WiringConfig {
   headless: boolean;
+  threads: number;
   frames: FrameConfig;
   pins: PinConfig;
   optimize: OptimizeConfig;
@@ -146,22 +148,31 @@ async function processFile(
   const ext = path.extname(filePath).toLowerCase();
 
   if ([".gif", ".mp4", ".mov", ".avi"].includes(ext)) {
-    const fps =
-      ext === ".gif" || config.frames.fps === -1
-        ? undefined
-        : config.frames.fps;
+    const fps = config.frames.fps === -1 ? undefined : config.frames.fps;
     const frames = await extractFrames(
       filePath,
       fps,
       config.frames.frame_count === -1 ? undefined : config.frames.frame_count,
+      config.frames.frame_skip === -1 ? undefined : config.frames.frame_skip,
     );
 
-    const results = [];
-    let i = 0;
-    for (const framePath of frames) {
-      const result = await processImage(framePath, config);
-      results.push(result);
-      console.log(`Progress: [${i++ + 1}/${frames.length}] frames processed.`);
+    const results: string[] = new Array(frames.length);
+
+    for (let i = 0; i < frames.length; i += config.threads) {
+      const batch = frames.slice(i, i + config.threads);
+
+      const batchPromises = batch.map((framePath, index) =>
+        processImage(framePath, config).then((result) => {
+          const globalIndex = i + index;
+          results[globalIndex] = result;
+          console.log(
+            `Progress: [${globalIndex + 1}/${frames.length}] frames processed.`,
+          );
+          return result;
+        }),
+      );
+
+      await Promise.all(batchPromises);
     }
     return results;
   } else {
@@ -173,15 +184,25 @@ async function extractFrames(
   videoPath: string,
   fps?: number,
   count?: number,
+  skip?: number,
 ): Promise<string[]> {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "frames-"));
   const framePaths: string[] = [];
 
   return new Promise((resolve, reject) => {
     const command = ffmpeg(videoPath);
+    const filterParts: string[] = [];
+
+    if (skip && skip > 0) {
+      filterParts.push(`select=gte(n\\,${skip})`);
+    }
 
     if (fps) {
-      command.outputOptions("-vf", `fps=${fps}`);
+      filterParts.push(`fps=${fps}`);
+    }
+
+    if (filterParts.length > 0) {
+      command.outputOptions("-vf", filterParts.join(","));
     }
 
     if (count && count > 0) {

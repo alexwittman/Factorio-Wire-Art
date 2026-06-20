@@ -1,8 +1,10 @@
 {
-    "headless": false,
+    "headless": true,
+    "threads": 5,
     "frames": {
         "fps": -1,
-        "frame_count": -1,
+        "frame_skip": -1,
+        "frame_count": 1050,
         "letterboxed": true
     },
     "pins": {
@@ -11,7 +13,7 @@
         "iterations": 30
     },
     "optimize":{
-        "theme": "rgb",
+        "theme": "w",
         "wire_count": 5000
     },
     "export": {
