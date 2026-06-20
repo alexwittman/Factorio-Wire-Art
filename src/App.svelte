@@ -42,7 +42,7 @@
         title="Visit YouTube Channel"
       >
         <img
-          src="/logo.png"
+          src="logo.png"
           alt="Channel Avatar"
           class="w-full h-full object-cover"
         />
