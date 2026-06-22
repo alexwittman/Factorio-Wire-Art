@@ -1,47 +1,27 @@
-# Svelte + TS + Vite
+# Factorio Wire Art
+This website will allow you to convert an image into a sequence of wire connections that can be placed in Factorio with the addition of the Wire Art Mod.
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+## Description
+This project attempts to approximate an image using only wires in Factorio. Various pole generation methods are used including, circle, square, and voronoi stippling. All computation is done in the browser using worker threads, so there is no backend to set up. For the images to display properly in Factorio only small modifications are required including, disabling wire shadows, decreasing wire opacity to 20%, and recoloring copper wire to blue.
 
-## Recommended IDE Setup
+# Getting Started
+This website has been built and hosted on my github pages at https://alexwittman.github.io/Factorio-Wire-Art/
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+If you are inclined to run this yourself, you can simply install dependencies, then run `npm run dev`
 
-## Need an official Svelte framework?
+# Animations
+The mod also supports animations. These tend to destroy the framerate in game since thousands of poles and wires are created and destroyed every second, so use at your own discretion.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+Inside the `/automation` folder there is a playwright script that can process gif, mp4, and other video formats. It requires you to run the website locally before it will work. It uses a config file to manipulate the website into performing the correct image conversion. I have occasionally had some stalling issues with the script, so it is not as robust as it could be.
 
-## Technical considerations
+To use the `animation.ts` script, run the following command:
 
-**Why use this over SvelteKit?**
+    npx ts-node ./automation/animate.ts [video file path] [config json file path] [output file path]
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+Once complete, the output file will contain a command to run in Factorio. These files can get very large. A 20fps video for 50 seconds (1000 frames) with 500 poles and max wires takes about 175MB of space, which will crash most text editors if you go to copy it from there.
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+The simplest way to copy using powershell is by running the following:
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+    Get-Content [output file path] | Set-Clipboard    
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+When pasting into Factorio, it will lag the game significantly (just to render all the text in the console). I recommend just running the command even though you can't see it, because I've never been able to see it even when waiting for 10 minutes.
